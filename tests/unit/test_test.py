@@ -7,3 +7,10 @@ def test_data(indigo):
 def test_data_is_empty(indigo):
     with raises(KeyError):
         indigo.data.get("x")
+
+def test_can_use_dict(indigo):
+    data = indigo.Dict()
+    data["test"] = True
+
+    assert data.get("test") is True
+    assert data["test"] is True
