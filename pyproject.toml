@@ -1,0 +1,25 @@
+[project]
+name = "pytest-indigo"
+version = "0.1.0"
+authors = [{name = "Aaron Rohrbaugh", email = "aaron@lionsheeptechnology.com"}]
+requires-python = ">= 3.13.0"
+dependencies = [
+    "pytest"
+]
+
+[project.entry-points.pytest11]
+pytest_indigo = "pytest_indigo"
+
+[tool.pytest]
+addopts = [
+    "--disable-plugin-autoload",
+    "-p pytest_cov",
+    "--cov=pytest_indigo"
+]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+
+[tool.coverage.run]
+branch = true

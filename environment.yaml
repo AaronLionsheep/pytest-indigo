@@ -1,0 +1,12 @@
+name: pytest-indigo-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python ~=3.13.0
+  - pytest
+  - pytest-cov
+  - mypy
+  - pip
+  - pip:
+      - -e .

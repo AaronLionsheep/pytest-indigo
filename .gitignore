@@ -1,0 +1,10 @@
+# Cache
+.pytest_cache
+.mypy_cache
+__pycache__
+
+# Testing
+.coverage
+
+# pip
+*.egg-info
