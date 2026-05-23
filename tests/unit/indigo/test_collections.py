@@ -1,68 +1,68 @@
 import pytest
 import string
 
-from pytest_indigo.indigo import Dict, List
+from pytest_indigo import IndigoMock
 
-def test_dict_get_key():
-    d = Dict()
+def test_dict_get_key(indigo: IndigoMock):
+    d = indigo.Dict()
     d["key"] = 5
 
     assert d.get("key") == 5
 
-def test_dict_get_missing_key_returns_none_by_default():
-    d = Dict()
+def test_dict_get_missing_key_returns_none_by_default(indigo: IndigoMock):
+    d = indigo.Dict()
 
     assert d.get("key") is None
 
-def test_dict_get_missing_key_returns_default():
-    d = Dict()
+def test_dict_get_missing_key_returns_default(indigo: IndigoMock):
+    d = indigo.Dict()
 
     assert d.get("key", 5) == 5
 
 @pytest.mark.parametrize("key", ["abc123", "one23", "a/2", "A-_m!@"])
-def test_dict_accepts_valid_keys(key):
-    d = Dict()
+def test_dict_accepts_valid_keys(indigo: IndigoMock, key):
+    d = indigo.Dict()
     d[key] = "PYTEST"
 
     assert d[key] == "PYTEST"
 
 @pytest.mark.parametrize("key", [1, None, list()])
-def test_dict_rejects_non_string_key(key):
+def test_dict_rejects_non_string_key(indigo: IndigoMock, key):
     with pytest.raises(Exception):
-        d = Dict()
+        d = indigo.Dict()
         d[key] = "PYTEST"
 
 @pytest.mark.parametrize("key", [" ", "ab c"])
-def test_dict_rejects_key_with_space(key):
+def test_dict_rejects_key_with_space(indigo: IndigoMock, key):
     with pytest.raises(RuntimeError, match="LowLevelBadParameterError -- illegal XML tag name character"):
-        d = Dict()
+        d = indigo.Dict()
         d[key] = "PYTEST"
 
 @pytest.mark.parametrize("key_start", list(string.digits + string.punctuation))
-def test_dict_rejects_key_starting_with_number_or_character(key_start):
+def test_dict_rejects_key_starting_with_number_or_character(indigo: IndigoMock, key_start):
     with pytest.raises(RuntimeError, match="LowLevelBadParameterError -- illegal XML tag name character"):
-        d = Dict()
+        d = indigo.Dict()
         d[key_start + "key"] = "PYTEST"
 
 @pytest.mark.xfail(reason="IndigoServer doesn't enforce this")
 @pytest.mark.parametrize("key", ["XML", "xml", "Xml"])
-def test_dict_rejects_xml_key(key):
+def test_dict_rejects_xml_key(indigo: IndigoMock, key):
     with pytest.raises(RuntimeError, match="LowLevelBadParameterError -- illegal XML tag name character"):
-        d = Dict()
+        d = indigo.Dict()
         d[key] = "PYTEST"
 
-def test_dict_to_dict():
-    d = Dict()
+def test_dict_to_dict(indigo: IndigoMock):
+    d = indigo.Dict()
     d["key"] = 5
     result = d.to_dict()
 
     assert result == {"key": 5}
 
-def test_dict_values_return_copy():
-    d1 = Dict()
+def test_dict_values_return_copy(indigo: IndigoMock):
+    d1 = indigo.Dict()
     d1["a"] = 1
 
-    d2 = Dict()
+    d2 = indigo.Dict()
     d2["a"] = 1
     d2["b"] = 2
 
