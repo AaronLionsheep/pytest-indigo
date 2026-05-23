@@ -1,4 +1,4 @@
-from pytest_indigo.indigo import Data, Dict, List
+from pytest_indigo.indigo import Dict, List
 
 class IndigoMock:
     def __init__(self):
@@ -7,5 +7,3 @@ class IndigoMock:
     def reset(self):
         self.Dict = Dict
         self.List = List
-
-        self.data = Data()
