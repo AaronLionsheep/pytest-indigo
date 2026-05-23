@@ -51,6 +51,52 @@ def test_dict_rejects_xml_key(indigo: IndigoMock, key):
         d = indigo.Dict()
         d[key] = "PYTEST"
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        True,
+        False,
+        1.8,
+        -7.5,
+        10,
+        "",
+        "pytest"
+    ]
+)
+def test_dict_accepts_primitive_values(indigo: IndigoMock, value):
+    d = indigo.Dict()
+    d["test"] = value
+
+    assert d["test"] == value
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        [],
+        [1, "two", False],
+        {"one": 1, "two": [1, 2, 3]}
+    ]
+)
+def test_dict_accepts_container_values(indigo: IndigoMock, value):
+    d = indigo.Dict()
+    d["test"] = value
+
+    assert d["test"] == value
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        [Exception(), "two", False],
+        {"one": 1, "two": [1, Exception(), 3]},
+        [[[[[Exception()]]]]],
+        {"key": {"key": {"key": Exception()}}}
+    ]
+)
+def test_dict_rejects_complex_container_values(indigo: IndigoMock, value):
+    d = indigo.Dict()
+    with pytest.raises(TypeError):
+        d["test"] = value
+
 def test_dict_to_dict(indigo: IndigoMock):
     d = indigo.Dict()
     d["key"] = 5
