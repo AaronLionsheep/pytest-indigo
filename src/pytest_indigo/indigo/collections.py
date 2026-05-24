@@ -1,5 +1,5 @@
 import string
-from typing import Any, SupportsIndex, overload, override, TypeAlias, Iterable, TypeVar, Generic
+from typing import Any, SupportsIndex, TypeAlias, Iterable
 from copy import deepcopy
 
 
@@ -77,6 +77,13 @@ class Dict(dict):
     Indigo dict wrapper. Behaves like a regular Python dict but may carry
     additional Indigo metadata. Used for pluginProps, globalProps, sharedProps, etc.
     """
+
+    def __init__(self, map: dict[str, CollectionValue] | None = None) -> None:
+        if map is None:
+            super().__init__()
+        else:
+            _validate_value(map)
+            super().__init__(map)
 
     def get(self, key: str, default: Any = None) -> Any:
         return super().get(key, default)

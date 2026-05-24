@@ -94,6 +94,17 @@ def test_list_values_return_copy(indigo: IndigoMock):
     assert outer[0] == inner
     assert outer[0] is not inner
 
+@pytest.mark.parametrize("value", PRIMITIVE_VALUES)
+def test_dict_init_primitive_value(indigo: IndigoMock, value):
+    d = indigo.Dict({"value": value})
+
+    assert d["value"] == value
+
+@pytest.mark.parametrize("value", COMPLEX_VALUES)
+def test_dict_init_complex_value_raises_type_error(indigo: IndigoMock, value):
+    with pytest.raises(TypeError):
+        indigo.Dict({"value": value})
+
 def test_dict_get_key(indigo: IndigoMock):
     d = indigo.Dict()
     d["key"] = 5
