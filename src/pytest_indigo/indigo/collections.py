@@ -62,7 +62,8 @@ class List(list):
         super().append(object)
 
     def extend(self, iterable: Iterable[CollectionValue], /) -> None:
-        for item in iterable: _validate_value(item)
+        for item in iterable:
+            _validate_value(item)
         super().extend(iterable)
 
     def to_list(self) -> list:
