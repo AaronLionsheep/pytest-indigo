@@ -3,7 +3,15 @@ from typing import Any, SupportsIndex, TypeAlias, Iterable
 from copy import deepcopy
 
 
-CollectionValue: TypeAlias = None | bool | float | int | str | list["CollectionValue"] | dict[str, "CollectionValue"]
+CollectionValue: TypeAlias = (
+    None
+    | bool
+    | float
+    | int
+    | str
+    | list["CollectionValue"]
+    | dict[str, "CollectionValue"]
+)
 
 type_strings = {
     None: "empty",
@@ -12,8 +20,9 @@ type_strings = {
     str: "string",
     bool: "bool",
     list: "list",
-    dict: "dict"
+    dict: "dict",
 }
+
 
 def _validate_value(value: Any) -> None:
     """Validate collection values against documented rules"""
@@ -31,11 +40,13 @@ def _validate_value(value: Any) -> None:
             f"No registered converter was able to produce a C++ rvalue of type CCString from this Python object of type {type(value)}"
         )
 
+
 class List(list):
     """
     Indigo list wrapper. Behaves like a regular Python list but may carry
     additional Indigo metadata.
     """
+
     def __init__(self, iterable: Iterable[CollectionValue] | None = None, /) -> None:
         if iterable is None:
             super().__init__()
@@ -43,26 +54,27 @@ class List(list):
             _validate_value(iterable)
             super().__init__(iterable)
 
-    def __setitem__(self, key: SupportsIndex, value: CollectionValue, /) -> None: # type: ignore
+    def __setitem__(self, key: SupportsIndex, value: CollectionValue, /) -> None:  # type: ignore
         if isinstance(key, slice):
             raise NotImplementedError()
-        
+
         _validate_value(value)
         super().__setitem__(key, value)
 
-    def __getitem__(self, key: SupportsIndex, /) -> CollectionValue: # type: ignore
+    def __getitem__(self, key: SupportsIndex, /) -> CollectionValue:  # type: ignore
         if isinstance(key, slice):
             raise NotImplementedError()
 
         value = super().__getitem__(key)
         return deepcopy(value)
-    
+
     def append(self, object: CollectionValue, /) -> None:
         _validate_value(object)
         super().append(object)
 
     def extend(self, iterable: Iterable[CollectionValue], /) -> None:
-        for item in iterable: _validate_value(item)
+        for item in iterable:
+            _validate_value(item)
         super().extend(iterable)
 
     def to_list(self) -> list:
@@ -71,6 +83,7 @@ class List(list):
         Patched in by utils.py.
         """
         return list(self)
+
 
 class Dict(dict):
     """
@@ -87,7 +100,7 @@ class Dict(dict):
 
     def get(self, key: str, default: Any = None) -> Any:
         return super().get(key, default)
-    
+
     @staticmethod
     def __validate_key(key: str):
         """Validate keys against documented rules"""
@@ -97,9 +110,13 @@ class Dict(dict):
             )
 
         if key[0] in string.digits or key[0] in string.punctuation or " " in key:
-            raise RuntimeError("LowLevelBadParameterError -- illegal XML tag name character")
-    
-    def __setitem__(self, key: str, value: bool | float | int | str | list | dict) -> None:
+            raise RuntimeError(
+                "LowLevelBadParameterError -- illegal XML tag name character"
+            )
+
+    def __setitem__(
+        self, key: str, value: bool | float | int | str | list | dict
+    ) -> None:
         # Validate the key and value
         self.__validate_key(key)
         _validate_value(value)

@@ -19,12 +19,12 @@ class BaseElem:
 
     def __init__(self, *args, **kwargs):
         raise RuntimeError("This class cannot be instantiated from Python")
-    
+
     @classmethod
     def __create__(cls, id: int, name: str):
         instance = super().__new__(cls)
 
-        # Fake our __init__ and initialize the instance        
+        # Fake our __init__ and initialize the instance
         instance.__id = id
         instance.__name = name
         instance.__description = ""

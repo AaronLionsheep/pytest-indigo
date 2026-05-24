@@ -9,6 +9,7 @@ def test_can_create_plugin(indigo):
 
     assert plugin.name == "plugin"
 
+
 @pytest.mark.xfail(reason="Placeholder")
 def test_can_start_plugin(indigo):
     plugin = Plugin()

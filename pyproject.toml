@@ -23,3 +23,8 @@ show_missing = true
 
 [tool.coverage.run]
 branch = true
+
+[tool.ruff]
+exclude = [
+    "indigo-stubs"
+]
