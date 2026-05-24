@@ -26,7 +26,7 @@ jobs:
         uses: astral-sh/ruff-action@0ce1b0bf8b818ef400413f810f8a11cdbda0034b #v4.0.0
         with:
           src: "./src ./tests"
-          args: "format --check"
+          args: "format --check --diff"
 
   test:
     name: Test
