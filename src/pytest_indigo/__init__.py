@@ -10,6 +10,6 @@ sys.modules["indigo"] = indigo_mock
 
 
 @fixture(name="indigo")
-def fixture_indigo() -> Generator[IndigoMock, None, None]:
+def fixture_indigo() -> Generator[IndigoMock]:
     yield indigo_mock
     indigo_mock.reset()
