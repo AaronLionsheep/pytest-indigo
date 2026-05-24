@@ -1,8 +1,9 @@
-from pytest_indigo.indigo import Data
+from pytest_indigo.indigo import Dict, List
 
 class IndigoMock:
     def __init__(self):
         self.reset()
 
     def reset(self):
-        self.data = Data()
+        self.Dict = Dict
+        self.List = List
