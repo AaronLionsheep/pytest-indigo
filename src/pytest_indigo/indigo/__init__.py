@@ -1,7 +1,5 @@
-from .collections import (
-    Dict as Dict,
-    List as List
-)
+from .collections import Dict as Dict, List as List
+
 
 class kProtocol(int):
     Insteon: "kProtocol"
