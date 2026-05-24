@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  - pull_request
+
+defaults:
+  run:
+    shell: bash -el {0}
+
+jobs:
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v6.0.2
+
+      # Check for linting issues
+      - name: Check Linting
+        uses: astral-sh/ruff-action@0ce1b0bf8b818ef400413f810f8a11cdbda0034b # v4.0.0
+        with:
+          src: "./src ./tests"
+          args: "check"
+
+      # Check for correct formatting
+      - name: Check Formatting
+        uses: astral-sh/ruff-action@0ce1b0bf8b818ef400413f810f8a11cdbda0034b #v4.0.0
+        with:
+          src: "./src ./tests"
+          args: "format --check"
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v6.0.2
+      - uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+        with:
+          activate-environment: pytest-indigo-dev
+          environment-file: environment.yaml
+          # python-version: 3.13
+          auto-activate: false
+      - name: Test
+        run: pytest
