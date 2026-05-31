@@ -1,7 +1,8 @@
 from pytest_indigo.indigo import Dict, List
+from types import ModuleType
 
 
-class IndigoMock:
+class IndigoMock(ModuleType):
     def __init__(self):
         self.reset()
 
