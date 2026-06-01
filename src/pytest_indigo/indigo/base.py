@@ -1,5 +1,9 @@
+from typing import TypeAlias, Union
+
 from .collections import Dict
 
+
+ElemKey: TypeAlias = Union[int, str, "BaseElem"]
 
 class BaseElem:
     """
