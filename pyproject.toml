@@ -12,6 +12,7 @@ pytest_indigo = "pytest_indigo"
 
 [tool.pytest]
 addopts = [
+    "-v",
     "--disable-plugin-autoload",
     "-p pytest_cov",
     "--cov=pytest_indigo"
