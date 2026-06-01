@@ -5,6 +5,7 @@ from .collections import Dict
 
 ElemKey: TypeAlias = Union[int, str, "BaseElem"]
 
+
 class BaseElem:
     """
     Base class for all Indigo database elements (devices, variables, triggers,
