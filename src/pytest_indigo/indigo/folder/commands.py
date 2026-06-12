@@ -1,5 +1,4 @@
 from typing import Iterator, Any
-from copy import deepcopy
 
 from ..base import ElemKey
 from ..ids import IndigoIds
@@ -21,18 +20,18 @@ class FolderCmds:
     def __getitem__(self, key: ElemKey) -> Folder:
         if isinstance(key, int) and not isinstance(key, bool):
             try:
-                return deepcopy(self.__folders[key])
+                return self.__folders[key]._copy_from_server()
             except KeyError:
                 raise KeyError(f"'key id {key} not found in database'")
         elif isinstance(key, str):
             for folder in self:
                 if folder.name == key:
-                    return deepcopy(folder)
+                    return folder._copy_from_server()
 
             raise KeyError(f"'key name {key} not found in database'")
         elif isinstance(key, Folder):
             try:
-                return deepcopy(self.__folders[key.id])
+                return self.__folders[key.id]._copy_from_server()
             except KeyError:
                 raise KeyError(f"'key id {key.id} not found in database'")
         elif key is None:
@@ -84,7 +83,8 @@ class FolderCmds:
 
     def iter(self, filter: str = "") -> Iterator[Folder]:
         """Iterate folder objects with an optional filter expression."""
-        return deepcopy(list(self.__folders.values())).__iter__()
+        folders = [folder._copy_from_server() for folder in self.__folders.values()]
+        return folders.__iter__()
 
     def itervalues(self, filter: str = "") -> Iterator[Folder]:
         """Alias for iter()."""
@@ -139,7 +139,7 @@ class FolderCmds:
 
         self.__folders[id] = folder
 
-        return deepcopy(folder)
+        return folder._copy_from_server()
 
     def duplicate(self, elem: ElemKey, duplicateName: str = "") -> Folder:
         """Duplicate an existing folder on the Indigo Server."""
