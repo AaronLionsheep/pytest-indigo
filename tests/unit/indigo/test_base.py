@@ -71,3 +71,28 @@ def test_get_owner_props():
 
 def test_get_plugin_props():
     assert get_element().pluginProps == {}
+
+
+def test_copy_from_server_sets_server_ref_when_none():
+    element = BaseElem.__create__(1, "Element")
+    copy = element._copy_from_server()
+
+    # element is the "server", so it should not have a server ref
+    # assert element._BaseElem__server_ref is None
+    # copy should have a full reference to the server element
+    assert copy._BaseElem__server_ref is element
+
+    # Make sure everything else is copied
+    assert element is not copy
+    assert element._BaseElem__global_props is not copy._BaseElem__global_props
+    assert element._BaseElem__shared_props is not copy._BaseElem__shared_props
+
+
+def test_copy_from_server_preserves_server_ref():
+    element = BaseElem.__create__(1, "Element")
+    copy1 = element._copy_from_server()
+    copy2 = copy1._copy_from_server()
+
+    assert copy1 is not copy2
+    assert copy1._BaseElem__server_ref is element
+    assert copy2._BaseElem__server_ref is element

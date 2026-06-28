@@ -1,4 +1,9 @@
+from typing import TypeAlias, Union, Self
+from copy import deepcopy
 from .collections import Dict
+
+
+ElemKey: TypeAlias = Union[int, str, "BaseElem"]
 
 
 class BaseElem:
@@ -16,12 +21,13 @@ class BaseElem:
     __remote_display: bool
     __global_props: Dict
     __shared_props: Dict
+    __server_ref: Self | None
 
     def __init__(self, *args, **kwargs):
         raise RuntimeError("This class cannot be instantiated from Python")
 
     @classmethod
-    def __create__(cls, id: int, name: str):
+    def __create__(cls, id: int, name: str, server_ref: Self | None = None):
         instance = super().__new__(cls)
 
         # Fake our __init__ and initialize the instance
@@ -31,8 +37,16 @@ class BaseElem:
         instance.__remote_display = True
         instance.__global_props = Dict()
         instance.__shared_props = Dict()
+        instance.__server_ref = server_ref
 
         return instance
+
+    def _copy_from_server(self) -> Self:
+        """Returns a copy of this object with a reference to the server object."""
+        copy = deepcopy(self)
+        copy.__server_ref = self.__server_ref or self
+
+        return copy
 
     @property
     def id(self) -> int:
