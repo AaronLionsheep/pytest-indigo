@@ -163,6 +163,7 @@ class FolderCmds:
                 )
 
         if deleteAllChildren:
+            # TODO: Delete children?
             raise NotImplementedError()
 
         del self.__folders[folder.id]

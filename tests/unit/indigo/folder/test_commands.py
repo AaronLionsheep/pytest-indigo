@@ -342,6 +342,16 @@ class TestCreate:
 
         assert folder._FolderCmds__folders[f.id] is not f
 
+    def test_has_ref_to_server_object(self, folder: FolderCmds):
+        f = folder.create("pytest")
+
+        assert folder._FolderCmds__folders[f.id] is f._BaseElem__server_ref
+
+    def test_server_ref_has_no_server_ref(self, folder: FolderCmds):
+        f = folder.create("pytest")
+
+        assert folder._FolderCmds__folders[f.id]._BaseElem__server_ref is None
+
     def test_raises_value_error_on_duplicate_name(self, folder: FolderCmds):
         folder.create("pytest")
 
