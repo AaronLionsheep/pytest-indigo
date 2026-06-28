@@ -1,9 +1,8 @@
 import pytest
 
-from collections.abc import Iterator
 
 from pytest_indigo.indigo.ids import IndigoIds
-from pytest_indigo.indigo.folder import FolderCmds, Folder
+from pytest_indigo.indigo.folder import FolderCmds
 
 
 @pytest.fixture()
