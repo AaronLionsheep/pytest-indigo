@@ -1,7 +1,7 @@
 import string
-from typing import Any, SupportsIndex, TypeAlias, Iterable
+from collections.abc import Iterable
 from copy import deepcopy
-
+from typing import Any, SupportsIndex, TypeAlias
 
 CollectionValue: TypeAlias = (
     None

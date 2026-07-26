@@ -8,8 +8,8 @@ defaults:
     shell: bash -el {0}
 
 jobs:
-  test:
-    name: Test
+  unit:
+    name: Unit Tests
     strategy:
       fail-fast: false
       matrix:

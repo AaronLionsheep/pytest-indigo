@@ -1,7 +1,7 @@
 import sys
+from collections.abc import Generator
 
 from pytest import fixture
-from typing import Generator
 
 from .mock import IndigoMock
 
