@@ -11,6 +11,7 @@ jobs:
   test:
     name: Test
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-26, macos-26-intel]
         python: [3.11, 3.13]
