@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  pull_request:
+
+defaults:
+  run:
+    shell: bash -el {0}
+
+jobs:
+  test:
+    name: Test
+    strategy:
+      matrix:
+        os: [macos-26, macos-26-intel]
+        python: [3.11, 3.13]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v6.0.2
+      
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+        with:
+          activate-environment: pytest-indigo-dev
+          environment-file: environment.yaml
+          python-version: ${{ matrix.python }}
+          auto-activate: false
+      
+      - name: Test
+        run: pytest
