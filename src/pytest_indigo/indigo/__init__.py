@@ -1,5 +1,6 @@
 from .base import ElemKey as ElemKey
-from .collections import Dict as Dict, List as List
+from .collections import Dict as Dict
+from .collections import List as List
 
 
 class kProtocol(int):
