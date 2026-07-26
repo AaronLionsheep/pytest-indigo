@@ -1,7 +1,7 @@
+from types import ModuleType
+
 from pytest_indigo.indigo import Dict, List
 from pytest_indigo.indigo.ids import IndigoIds
-
-from types import ModuleType
 
 
 class IndigoMock(ModuleType):

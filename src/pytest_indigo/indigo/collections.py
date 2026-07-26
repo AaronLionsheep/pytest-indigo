@@ -1,7 +1,7 @@
 import string
-from typing import Any, SupportsIndex, TypeAlias, Iterable
+from collections.abc import Iterable
 from copy import deepcopy
-
+from typing import Any, SupportsIndex, TypeAlias
 
 CollectionValue: TypeAlias = (
     None
@@ -114,9 +114,7 @@ class Dict(dict):
                 "LowLevelBadParameterError -- illegal XML tag name character"
             )
 
-    def __setitem__(
-        self, key: str, value: bool | float | int | str | list | dict
-    ) -> None:
+    def __setitem__(self, key: str, value: bool | float | str | list | dict) -> None:
         # Validate the key and value
         self.__validate_key(key)
         _validate_value(value)

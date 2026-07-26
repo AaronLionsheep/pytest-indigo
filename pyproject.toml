@@ -2,7 +2,7 @@
 name = "pytest-indigo"
 version = "0.1.0"
 authors = [{name = "Aaron Rohrbaugh", email = "aaron@lionsheeptechnology.com"}]
-requires-python = ">= 3.13.0"
+requires-python = ">= 3.11.0"
 dependencies = [
     "pytest"
 ]

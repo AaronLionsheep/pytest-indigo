@@ -8,12 +8,12 @@ class Plugin:
 
     def start(self):
         if indigo.data.get("running"):
-            raise Exception("Plugin is already running!")
+            raise Exception("Plugin is already running!")  # noqa: TRY002
 
         indigo.data.set("running", True)
 
     def stop(self):
         if not indigo.data.get("running"):
-            raise Exception("Plugin is not running!")
+            raise Exception("Plugin is not running!")  # noqa: TRY002
 
         indigo.data.set("running", False)

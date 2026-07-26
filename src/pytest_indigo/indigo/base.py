@@ -1,7 +1,7 @@
-from typing import TypeAlias, Union, Self
 from copy import deepcopy
-from .collections import Dict
+from typing import Self, TypeAlias, Union
 
+from .collections import Dict
 
 ElemKey: TypeAlias = Union[int, str, "BaseElem"]
 

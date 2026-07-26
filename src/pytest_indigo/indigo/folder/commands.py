@@ -1,4 +1,5 @@
-from typing import Iterator, Any
+from collections.abc import Iterator
+from typing import Any
 
 from ..base import ElemKey
 from ..ids import IndigoIds
@@ -14,7 +15,7 @@ class FolderCmds:
 
     def __init__(self, ids: IndigoIds):
         self.__ids = ids
-        self.__folders: dict[int, Folder] = dict()
+        self.__folders: dict[int, Folder] = {}
 
     # --- collection interface ---
     def __getitem__(self, key: ElemKey) -> Folder:
@@ -51,11 +52,14 @@ class FolderCmds:
             )
 
         for folder in self:
-            if isinstance(key, int) and folder.id == key:
-                return True
-            elif isinstance(key, str) and folder.name == key:
-                return True
-            elif isinstance(key, Folder) and folder.name == key.name:
+            if (
+                isinstance(key, int)
+                and folder.id == key
+                or isinstance(key, str)
+                and folder.name == key
+                or isinstance(key, Folder)
+                and folder.name == key.name
+            ):
                 return True
 
         return False

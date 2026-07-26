@@ -1,9 +1,9 @@
-import pytest
-
 from collections.abc import Iterator
 
+import pytest
+
+from pytest_indigo.indigo.folder import Folder, FolderCmds
 from pytest_indigo.indigo.ids import IndigoIds
-from pytest_indigo.indigo.folder import FolderCmds, Folder
 
 
 @pytest.fixture()
@@ -54,7 +54,7 @@ class TestDunderGetitem:
         with pytest.raises(KeyError, match="'required elem or key type was None'"):
             folder[None]
 
-    @pytest.mark.parametrize("key", [True, False, dict(), set(), object()])
+    @pytest.mark.parametrize("key", [True, False, {}, set(), object()])
     def test_raise_type_error_on_bad_elem_key(self, folder: FolderCmds, key):
         with pytest.raises(
             TypeError,
@@ -90,7 +90,7 @@ class TestDunderContains:
 
         assert not folder.__contains__(key)
 
-    @pytest.mark.parametrize("key", [True, False, dict(), set(), object()])
+    @pytest.mark.parametrize("key", [True, False, {}, set(), object()])
     def test_raise_type_error(self, folder: FolderCmds, key):
         with pytest.raises(
             TypeError,
@@ -136,7 +136,7 @@ class TestGet:
     def test_by_none_returns_default(self, folder: FolderCmds):
         assert folder.get(None, default=123) == 123
 
-    @pytest.mark.parametrize("key", [True, False, dict(), set(), object()])
+    @pytest.mark.parametrize("key", [True, False, {}, set(), object()])
     def test_raise_type_error_on_bad_elem_key(self, folder: FolderCmds, key):
         with pytest.raises(
             TypeError,
@@ -185,7 +185,7 @@ class TestHasKey:
 
         assert folder.has_key(f)
 
-    @pytest.mark.parametrize("key", [True, False, dict(), set(), object()])
+    @pytest.mark.parametrize("key", [True, False, {}, set(), object()])
     def test_raise_type_error(self, folder: FolderCmds, key):
         with pytest.raises(
             TypeError,
@@ -293,7 +293,7 @@ class TestGetName:
     def test_not_found_returns_empty_string(self, folder: FolderCmds):
         assert folder.getName(0) == ""
 
-    @pytest.mark.parametrize("key", [True, False, dict(), set(), object()])
+    @pytest.mark.parametrize("key", [True, False, {}, set(), object()])
     def test_raise_type_error(self, folder: FolderCmds, key):
         with pytest.raises(
             TypeError,
@@ -312,7 +312,7 @@ class TestGetId:
     def test_not_found_returns_0(self, folder: FolderCmds):
         assert folder.getId("pytest") == 0
 
-    @pytest.mark.parametrize("key", [True, False, dict(), set(), object()])
+    @pytest.mark.parametrize("key", [True, False, {}, set(), object()])
     def test_raise_type_error(self, folder: FolderCmds, key):
         with pytest.raises(
             TypeError,

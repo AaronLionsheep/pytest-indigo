@@ -1,11 +1,11 @@
-import pytest
 import string
+
+import pytest
 
 from pytest_indigo import IndigoMock
 
-
-PRIMITIVE_VALUES = [None, True, False, 1.8, -7.5, 10, "", "pytest", list(), dict()]
-COMPLEX_VALUES = [Exception("PYTEST"), object(), set([1, 2, 3])]
+PRIMITIVE_VALUES = [None, True, False, 1.8, -7.5, 10, "", "pytest", [], {}]
+COMPLEX_VALUES = [Exception("PYTEST"), object(), {1, 2, 3}]
 
 
 def test_list_init_primitive_values(indigo: IndigoMock):
@@ -145,7 +145,7 @@ def test_dict_keys(indigo: IndigoMock, key):
     assert idict[key] == "PYTEST"
 
 
-@pytest.mark.parametrize("key", [1, None, list()])
+@pytest.mark.parametrize("key", [1, None, []])
 def test_dict_non_string_key_raises_type_error(indigo: IndigoMock, key):
     with pytest.raises(TypeError):
         idict = indigo.Dict()
