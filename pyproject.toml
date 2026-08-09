@@ -30,3 +30,6 @@ branch = true
 exclude = [
     "indigo-stubs"
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"integration/*" = ["N999"]
