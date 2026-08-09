@@ -45,7 +45,6 @@ class DeviceCmds:
 
     def getGroupList(self, device: ElemKey) -> list[int]:
         """Return a list of device IDs in the same group as the given device."""
-        return []
 
     def groupWithDevice(self, device: ElemKey, groupWithDevice: ElemKey) -> None:
         """Add a device to the same group as another device."""

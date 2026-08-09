@@ -2,7 +2,6 @@ from collections.abc import Iterator
 from typing import Any
 
 from pytest_indigo.indigo.folder.commands import FolderCmds
-from pytest_indigo.indigo.folder.model import Folder
 from pytest_indigo.indigo.ids import IndigoIds
 
 from . import ElemKey
@@ -33,46 +32,35 @@ class _ElemCollection:
     def __contains__(self, key: object) -> bool: ...
     def __iter__(self) -> Iterator[Any]:
         """Iterate values (elements), not keys."""
-        ...
 
     def __len__(self) -> int: ...
 
     def get(self, key: ElemKey, default: Any = None) -> Any:
         """Return element by key, or *default* if not found."""
-        return "Aaron"
 
     def keys(self, filter: str = "") -> list[int]:
         """Return a list of element IDs, optionally filtered."""
-        ...
 
     def has_key(self, key: ElemKey) -> bool:
         """Return True if *key* exists in the collection (alias for ``in``)."""
-        ...
 
     def iter(self, filter: str = "") -> Iterator[Any]:
         """Iterate values (elements) with an optional filter expression."""
-        ...
 
     def itervalues(self, filter: str = "") -> Iterator[Any]:
         """Alias for iter(). Iterate values with an optional filter expression."""
-        ...
 
     def iterkeys(self, filter: str = "") -> Iterator[int]:
         """Iterate element IDs with an optional filter expression."""
-        ...
 
     def len(self, filter: str = "") -> int:
         """Return the number of elements, optionally filtered."""
-        ...
 
     def getName(self, key: int) -> str:
         """Return the name for element *key* (ID), or '' if not found."""
-        ...
 
     def getId(self, name: str) -> int:
         """Return the ID for element *name*, or 0 if not found."""
-        ...
 
     def subscribeToChanges(self) -> None:
         """Subscribe the calling plugin to change notifications for this collection."""
-        ...

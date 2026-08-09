@@ -1,6 +1,6 @@
 import datetime
 from collections.abc import Iterator
-from typing import Any, Self
+from typing import Any
 
 from pytest_indigo.indigo.base.element import BaseElem
 from pytest_indigo.indigo.collections import Dict
@@ -15,6 +15,7 @@ class Device(BaseElem):
     Properties defined in CDeviceBase_pyglue.cpp.
     """
 
+    """
     @classmethod
     def __create__(cls, id: int, name: str, server_ref: Self | None = None):
         instance = cls.__create__(id, name, server_ref)
@@ -29,6 +30,7 @@ class Device(BaseElem):
         instance.__server_ref = server_ref
 
         return instance
+    """
 
     # ---- Configuration / identity ----
     @property
