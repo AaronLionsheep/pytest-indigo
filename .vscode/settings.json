@@ -8,8 +8,13 @@
     "editor.formatOnSave": true,
     "cSpell.words": [
         "Accum",
+        "addini",
+        "addoption",
+        "getfixturevalue",
+        "getgroup",
         "Insteon",
         "iodevice",
+        "myplugin",
         "Pudb",
         "pyglue",
         "setpoints",
