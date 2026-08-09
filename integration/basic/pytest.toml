@@ -1,0 +1,7 @@
+[pytest]
+addopts = [
+    "-v",
+    "-p pytest_cov",
+    "--cov="
+]
+#testpaths = ["."]

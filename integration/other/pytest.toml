@@ -1,0 +1,8 @@
+[pytest]
+addopts = [
+    "-v",
+    "--disable-plugin-autoload",
+    "-p pytest_cov",
+    "--cov="
+]
+testpaths = ["."]
