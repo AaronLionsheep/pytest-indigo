@@ -23,6 +23,7 @@ from pytest_indigo.indigo.device.models import (
     ThermostatDevice,
 )
 from pytest_indigo.indigo.ids import IndigoIds
+from pytest_indigo.indigo.server import ServerInfo
 
 
 class IndigoMock(ModuleType):
@@ -149,7 +150,7 @@ class IndigoMock(ModuleType):
         # self.zwave = ZWaveInterface()
 
         # ---- Server / host interfaces ----
-        # self.server = ServerInfo()
+        self.server = ServerInfo()
 
         # ---- Active plugin instance ----
         # self.activePlugin: PluginBase

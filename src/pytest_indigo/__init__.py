@@ -31,7 +31,7 @@ def find_plugin(base_dir):
             f"{plugins}"
         )
 
-    return plugins
+    return plugins[0]
 
 
 def pytest_addoption(parser):
@@ -57,8 +57,8 @@ def pytest_addoption(parser):
 @fixture(name="indigo")
 def fixture_indigo(request) -> Generator[IndigoMock, None, None]:
     # data = request.getfixturevalue("plugin_fixture_name")
-    plugins = find_plugin(request.config.rootpath)
-    print(plugins)
+    # plugin = find_plugin(request.config.rootpath)
+    # print(plugin)
 
     yield indigo_mock
     indigo_mock.reset()
