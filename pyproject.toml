@@ -17,6 +17,7 @@ addopts = [
     "-p pytest_cov",
     "--cov=pytest_indigo"
 ]
+testpaths = ["tests"]
 
 [tool.coverage.report]
 fail_under = 100

@@ -1,8 +1,9 @@
 from collections.abc import Iterator
 from typing import Any
 
-from ..base import ElemKey
-from ..ids import IndigoIds
+from pytest_indigo.indigo.base import ElemKey
+from pytest_indigo.indigo.ids import IndigoIds
+
 from .model import Folder
 
 
