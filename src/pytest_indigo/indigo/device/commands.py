@@ -20,7 +20,6 @@ class DeviceCmds:
         """Return True if *indigo_object* is a device type supported by this command namespace.
         Patched in by utils.py.
         """
-        ...
 
     def create(
         self,
@@ -34,19 +33,15 @@ class DeviceCmds:
         folder: ElemKey | None = None,
     ) -> Device:
         """Create a new device on the Indigo Server."""
-        ...
 
     def duplicate(self, device: ElemKey, duplicateName: str = "") -> Device:
         """Duplicate an existing device."""
-        ...
 
     def delete(self, device: ElemKey) -> None:
         """Delete a device from the Indigo Server."""
-        ...
 
-    def getDependencies(self, device: ElemKey | List | Tuple) -> Any:
+    def getDependencies(self, device: ElemKey | List | Tuple) -> Any:  # noqa: UP006
         """Return all element dependencies for the given device(s)."""
-        ...
 
     def getGroupList(self, device: ElemKey) -> list[int]:
         """Return a list of device IDs in the same group as the given device."""
@@ -54,51 +49,40 @@ class DeviceCmds:
 
     def groupWithDevice(self, device: ElemKey, groupWithDevice: ElemKey) -> None:
         """Add a device to the same group as another device."""
-        ...
 
     def ungroupDevice(self, device: ElemKey) -> None:
         """Remove a device from its group."""
-        ...
 
     def moveToFolder(self, device: ElemKey, value: ElemKey) -> None:
         """Move a device to a different folder."""
-        ...
 
     def displayInRemoteUI(self, device: ElemKey, value: bool) -> None:
         """Change a device's remote UI display visibility."""
-        ...
 
     def enable(
         self, device: ElemKey, value: bool, delay: int = 0, duration: int = 0
     ) -> None:
         """Enable or disable a device with optional delay and duration (in seconds)."""
-        ...
 
     def changeDeviceTypeId(self, device: ElemKey, deviceTypeId: str) -> None:
         """Change the device type ID of a device."""
-        ...
 
     def x10ChangeAddress(self, device: ElemKey, address: str) -> None:
         """Change the X10 address of a device."""
-        ...
 
     def x10ChangeModel(self, device: ElemKey, model: str) -> None:
         """Change the X10 model of a device."""
-        ...
 
     def removeDelayedActions(self, device: ElemKey) -> None:
         """Remove all pending delayed actions for the given device."""
-        ...
 
     def allOff(
         self, suppressLogging: bool = False, updateStatesOnly: bool = False
     ) -> None:
         """Send All Off command."""
-        ...
 
     def beep(self, device: ElemKey, suppressLogging: bool = False) -> None:
         """Send a beep command to the device."""
-        ...
 
     def statusRequest(
         self,
@@ -107,11 +91,9 @@ class DeviceCmds:
         updateStatesOnly: bool = False,
     ) -> None:
         """Request a status update from the device."""
-        ...
 
     def ping(self, device: ElemKey, suppressLogging: bool = False) -> None:
         """Send a ping to the device."""
-        ...
 
     def turnOn(
         self,
@@ -121,7 +103,6 @@ class DeviceCmds:
         delay: int = 0,
     ) -> None:
         """Turn the device on."""
-        ...
 
     def turnOff(
         self,
@@ -131,7 +112,6 @@ class DeviceCmds:
         delay: int = 0,
     ) -> None:
         """Turn the device off."""
-        ...
 
     def toggle(
         self,
@@ -141,7 +121,6 @@ class DeviceCmds:
         delay: int = 0,
     ) -> None:
         """Toggle the device on/off state."""
-        ...
 
     def lock(
         self,
@@ -150,7 +129,6 @@ class DeviceCmds:
         updateStatesOnly: bool = False,
     ) -> None:
         """Send a lock command to the device."""
-        ...
 
     def unlock(
         self,
@@ -159,7 +137,6 @@ class DeviceCmds:
         updateStatesOnly: bool = False,
     ) -> None:
         """Send an unlock command to the device."""
-        ...
 
     def open(
         self,
@@ -168,7 +145,6 @@ class DeviceCmds:
         updateStatesOnly: bool = False,
     ) -> None:
         """Send an open command to the device."""
-        ...
 
     def close(
         self,
@@ -177,15 +153,12 @@ class DeviceCmds:
         updateStatesOnly: bool = False,
     ) -> None:
         """Send a close command to the device."""
-        ...
 
     def energyResetTotal(self, device: ElemKey, suppressLogging: bool = False) -> None:
         """Reset the device's accumulated energy total."""
-        ...
 
     def energyUpdate(self, device: ElemKey, suppressLogging: bool = False) -> None:
         """Request an energy update from the device."""
-        ...
 
 
 class RelayDeviceCmds(DeviceCmds):
@@ -199,13 +172,11 @@ class RelayDeviceCmds(DeviceCmds):
         self, suppressLogging: bool = False, updateStatesOnly: bool = False
     ) -> None:
         """Send All Lights Off command."""
-        ...
 
     def allLightsOn(
         self, suppressLogging: bool = False, updateStatesOnly: bool = False
     ) -> None:
         """Send All Lights On command."""
-        ...
 
     def setLedState(
         self,
@@ -215,7 +186,6 @@ class RelayDeviceCmds(DeviceCmds):
         suppressLogging: bool = False,
     ) -> None:
         """Set the state of a specific LED on the device."""
-        ...
 
 
 class DimmerDeviceCmds(RelayDeviceCmds):
@@ -234,7 +204,6 @@ class DimmerDeviceCmds(RelayDeviceCmds):
         delay: int = 0,
     ) -> None:
         """Brighten the device by a specified amount."""
-        ...
 
     def dim(
         self,
@@ -245,7 +214,6 @@ class DimmerDeviceCmds(RelayDeviceCmds):
         delay: int = 0,
     ) -> None:
         """Dim the device by a specified amount."""
-        ...
 
     def setBrightness(
         self,
@@ -256,7 +224,6 @@ class DimmerDeviceCmds(RelayDeviceCmds):
         delay: int = 0,
     ) -> None:
         """Set the device's brightness to a specific level (0-100)."""
-        ...
 
     def setColorLevels(
         self,
@@ -271,7 +238,6 @@ class DimmerDeviceCmds(RelayDeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set one or more color channel levels on the device."""
-        ...
 
 
 class SensorDeviceCmds(DeviceCmds):
@@ -288,7 +254,6 @@ class SensorDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the sensor's on/off state."""
-        ...
 
 
 class SpeedControlDeviceCmds(DeviceCmds):
@@ -305,7 +270,6 @@ class SpeedControlDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Increase the device's speed index by delta steps."""
-        ...
 
     def decreaseSpeedIndex(
         self,
@@ -315,7 +279,6 @@ class SpeedControlDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Decrease the device's speed index by delta steps."""
-        ...
 
     def setSpeedLevel(
         self,
@@ -325,7 +288,6 @@ class SpeedControlDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the device's speed to a specific percentage (0-100)."""
-        ...
 
     def setSpeedIndex(
         self,
@@ -335,7 +297,6 @@ class SpeedControlDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the device's speed to a specific index step."""
-        ...
 
 
 class ThermostatDeviceCmds(DeviceCmds):
@@ -352,7 +313,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the HVAC operating mode (one of indigo.kHvacMode.*)."""
-        ...
 
     def setFanMode(
         self,
@@ -362,7 +322,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the fan mode (one of indigo.kFanMode.*)."""
-        ...
 
     def setCoolSetpoint(
         self,
@@ -372,7 +331,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the cool setpoint temperature."""
-        ...
 
     def setHeatSetpoint(
         self,
@@ -382,7 +340,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Set the heat setpoint temperature."""
-        ...
 
     def increaseCoolSetpoint(
         self,
@@ -392,7 +349,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Increase the cool setpoint by delta degrees."""
-        ...
 
     def decreaseCoolSetpoint(
         self,
@@ -402,7 +358,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Decrease the cool setpoint by delta degrees."""
-        ...
 
     def increaseHeatSetpoint(
         self,
@@ -412,7 +367,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Increase the heat setpoint by delta degrees."""
-        ...
 
     def decreaseHeatSetpoint(
         self,
@@ -422,7 +376,6 @@ class ThermostatDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Decrease the heat setpoint by delta degrees."""
-        ...
 
 
 class SprinklerDeviceCmds(DeviceCmds):
@@ -438,7 +391,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Advance to the next zone."""
-        ...
 
     def previousZone(
         self,
@@ -447,7 +399,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Advance to the previous zone."""
-        ...
 
     def pause(
         self,
@@ -456,7 +407,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Pause the current schedule."""
-        ...
 
     def resume(
         self,
@@ -465,7 +415,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Resume a paused schedule."""
-        ...
 
     def run(
         self,
@@ -478,7 +427,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         Run a sprinkler schedule. If schedule is None, reruns the previous schedule.
         Schedule is a list of zone durations in minutes.
         """
-        ...
 
     def stop(
         self,
@@ -487,7 +435,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         updateStatesOnly: bool = False,
     ) -> None:
         """Stop the current schedule."""
-        ...
 
     def setActiveZone(
         self,
@@ -499,7 +446,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         """
         Turn on a specific zone by 1-based index. Pass None or 0 to stop all zones.
         """
-        ...
 
     def turnOnZone(
         self,
@@ -512,7 +458,6 @@ class SprinklerDeviceCmds(DeviceCmds):
         Deprecated. Use setActiveZone() instead.
         Turn on a specific zone by 0-based index.
         """
-        ...
 
 
 class MultiIODeviceCmds(DeviceCmds):
@@ -532,4 +477,3 @@ class MultiIODeviceCmds(DeviceCmds):
         """
         Turn on or off a specific binary (relay) output by 0-based index.
         """
-        ...
