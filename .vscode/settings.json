@@ -5,5 +5,16 @@
         "./src"
     ],
     "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "cSpell.words": [
+        "Accum",
+        "Insteon",
+        "iodevice",
+        "Pudb",
+        "pyglue",
+        "setpoints",
+        "speedcontrol",
+        "ungroup",
+        "zwave"
+    ]
 }
