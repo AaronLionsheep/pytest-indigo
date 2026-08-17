@@ -1,6 +1,6 @@
 import pytest
 
-from pytest_indigo.indigo.base import BaseElem
+from pytest_indigo.indigo.base.element import BaseElem
 
 
 def get_element() -> BaseElem:

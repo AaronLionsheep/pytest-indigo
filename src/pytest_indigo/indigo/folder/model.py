@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from typing import Any
 
-from ..base import BaseElem
+from ..base.element import BaseElem
 
 
 class Folder(BaseElem):
