@@ -13,21 +13,45 @@ This is a testing utility.
 I will try my best to **mimic** Indigo Server behavior, but this will never be perfect.
 
 ## Getting started
-### Installation
+### 1. Install pytest-indigo
 Install pytest-indigo into the environment you use to test your plugin:
 
 ```bash
 pip install -e /path/to/pytest-indigo
 ```
 
-pytest-indigo registers itself as a pytest plugin, so it is loaded automatically. If your project disables plugin autoloading, load it from your root `conftest.py`:
+pytest-indigo is a pytest plugin, so pytest loads it automatically. Once it is loaded, `import indigo` resolves to the mock, both in your plugin's code and in your tests.
+
+### 2. Write a test
+Add a test to your plugin. The [`plugin`](#plugin) fixture creates a new instance of your plugin's `Plugin` class for each test:
 
 ```python
-pytest_plugins = ["pytest_indigo"]
+# MyPlugin.indigoPlugin/Contents/Server Plugin/tests/test_plugin.py
+import indigo
+
+
+def test_plugin_loads(plugin):
+    assert plugin.pluginId == "com.example.myplugin"  # Your plugin's CFBundleIdentifier
+    assert indigo.activePlugin is plugin
 ```
 
-Once pytest-indigo is loaded, `import indigo` resolves to the mock, both in your plugin code and in your tests.
+### 3. Run your tests
+Run pytest from the folder containing your `.indigoPlugin` bundle:
 
+```bash
+cd MyPlugin
+pytest
+```
+
+pytest-indigo finds your plugin bundle, and makes its `Server Plugin` modules importable by your tests, with no configuration.
+
+### Next steps
+- [Fixtures](#fixtures): set up and inspect Indigo's state, and start your plugin with saved preferences.
+- [Marks](#marks): change the Indigo Server version or your plugin's preferences for a test, class or module.
+- [Type hints](#type-hints): a one-time setup so your editor knows your plugin's members in every test.
+- [Configuration](#configuration): choose a plugin when your project contains more than one.
+
+## Project setup
 ### Project layout
 pytest-indigo expects to run from a directory containing your `.indigoPlugin` bundle:
 
@@ -44,7 +68,16 @@ MyPlugin/                     <- run pytest from here
                 └── test_plugin.py
 ```
 
-Indigo runs your plugin with `Server Plugin` on the Python path, which is why `plugin.py` can `import mymodule`. Do the same for your tests with pytest's `pythonpath` option:
+Indigo runs your plugin with `Server Plugin` on the Python path, which is why `plugin.py` can `import mymodule`. pytest-indigo does the same before your tests and `conftest.py` files are loaded, so your tests can `from plugin import Plugin` and `import mymodule` with no extra configuration. If the rootdir contains more than one plugin, set the [`indigo_plugin`](#configuration) ini option to choose one.
+
+### Loading pytest-indigo without autoloading
+If your project disables pytest's plugin autoloading, load pytest-indigo from your root `conftest.py`:
+
+```python
+pytest_plugins = ["pytest_indigo"]
+```
+
+In this case, `Server Plugin` is added to the path a little later: after your root `conftest.py` is loaded, but before your tests are collected. To import your plugin's modules in the root `conftest.py` too, add `Server Plugin` with pytest's `pythonpath` option:
 
 ```toml
 # pytest.toml
@@ -311,6 +344,89 @@ def test_reads_active_plugin_prefs(indigo):
 ```
 
 The [`indigo`](#indigo) fixture puts the default plugin back after the test.
+
+## Type hints
+pytest-indigo is typed, so your editor and type checker can check your tests. With a one-time setup, your editor also knows that the [`plugin`](#plugin) fixture and `indigo.activePlugin` are your plugin's `Plugin` class, in every test, without annotating each one.
+
+### One-time setup
+First, add your `Server Plugin` folder to your type checker's search path, so `from plugin import Plugin` resolves. Type checkers don't run pytest, so they can't find it on their own:
+
+```toml
+# pyproject.toml
+[tool.pyright]
+extraPaths = ["MyPlugin.indigoPlugin/Contents/Server Plugin"]
+
+[tool.mypy]
+mypy_path = "MyPlugin.indigoPlugin/Contents/Server Plugin"
+```
+
+Then, in a `conftest.py`, override the [`plugin`](#plugin) and [`indigo`](#indigo) fixtures with your plugin's types. Each override requests pytest-indigo's fixture of the same name and returns it unchanged, so only the type annotations are added:
+
+```python
+# conftest.py
+import pytest
+from plugin import Plugin
+
+from pytest_indigo import IndigoMock
+
+
+@pytest.fixture()
+def plugin(plugin) -> Plugin:
+    return plugin
+
+
+@pytest.fixture()
+def indigo(indigo) -> IndigoMock[Plugin]:
+    return indigo
+```
+
+`IndigoMock` takes the type of `indigo.activePlugin` as a type parameter, so `IndigoMock[Plugin]` types `indigo.activePlugin` as your `Plugin`. Without a type parameter, `indigo.activePlugin` is an `indigo.PluginBase`.
+
+If your project loads pytest-indigo with `pytest_plugins`, put this `conftest.py` in your tests folder rather than the root, or see [Loading pytest-indigo without autoloading](#loading-pytest-indigo-without-autoloading).
+
+Your tests don't need any annotations:
+
+```python
+def test_validate_prefs(plugin):
+    plugin.my_plugin_method()  # plugin is a Plugin
+
+
+def test_active_plugin(indigo, plugin):
+    indigo.activePlugin.my_plugin_method()  # indigo.activePlugin is a Plugin
+```
+
+Editors with pytest support, such as VS Code with Pylance and PyCharm, take a test's fixture types from the fixtures' return annotations.
+
+### Command-line type checkers
+`pyright` and `mypy` don't know about pytest fixtures, so they treat unannotated fixture parameters as `Any`. Your tests still pass type checking, but their use of the fixtures isn't checked. To check a test from the command line, annotate its fixture parameters:
+
+```python
+from plugin import Plugin
+
+from pytest_indigo import IndigoMock
+
+
+def test_active_plugin(indigo: IndigoMock[Plugin], plugin: Plugin):
+    indigo.activePlugin.my_plugin_method()
+```
+
+### The type parameter is only a hint
+The type parameter is not checked when the test runs. `indigo.activePlugin` holds your `Plugin` only when the test requests the [`plugin`](#plugin) fixture or assigns your plugin itself. Otherwise it holds a bare `indigo.PluginBase`, whatever the annotation says.
+
+### Inside your plugin's code
+Your plugin's own code is checked against the `indigo` stubs provided by the Indigo team, where `indigo.activePlugin` is always an `indigo.PluginBase`. pytest-indigo can't change that. Where your plugin needs its own members from the active plugin, use `typing.cast`:
+
+```python
+from typing import TYPE_CHECKING, cast
+
+import indigo
+
+if TYPE_CHECKING:
+    # Only imported for type checking, since plugin.py imports this module
+    from plugin import Plugin
+
+plugin = cast("Plugin", indigo.activePlugin)
+```
 
 ## Configuration
 pytest-indigo reads these ini options from your pytest configuration file:
