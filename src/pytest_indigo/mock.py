@@ -23,6 +23,7 @@ from pytest_indigo.indigo.device.models import (
     ThermostatDevice,
 )
 from pytest_indigo.indigo.ids import IndigoIds
+from pytest_indigo.indigo.plugin_base import IndigoLogger, PluginBase
 from pytest_indigo.indigo.server import ServerInfo
 
 DEFAULT_API_VERSION = "3"
@@ -43,6 +44,9 @@ class IndigoMock(ModuleType):
     ThermostatDevice = ThermostatDevice
     SprinklerDevice = SprinklerDevice
     MultiIODevice = MultiIODevice
+
+    IndigoLogger = IndigoLogger
+    PluginBase = PluginBase
 
     # ---- Collections ----
     devices: DeviceList
@@ -103,8 +107,13 @@ class IndigoMock(ModuleType):
     """Internal host interface (not for plugin use)."""
 
     # ---- Active plugin instance ----
-    # activePlugin: PluginBase
-    """The currently running plugin instance. Set by IndigoPluginHost3 at startup."""
+    activePlugin: PluginBase
+    """
+    The currently running plugin instance. Set by IndigoPluginHost3 at startup.
+
+    Defaults to a bare PluginBase. Tests act as IndigoPluginHost3 and assign the
+    plugin under test.
+    """
 
     # ---- Debug / plugin mode constants ----
     kPluginDebugMode_none: int
@@ -161,4 +170,6 @@ class IndigoMock(ModuleType):
         self.server = ServerInfo(api_version=api_version)
 
         # ---- Active plugin instance ----
-        # self.activePlugin: PluginBase
+        self.activePlugin = PluginBase(
+            "com.pytest-indigo.plugin", "pytest-indigo", "0.0.0", Dict()
+        )
