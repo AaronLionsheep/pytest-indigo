@@ -4,6 +4,7 @@ import plistlib
 import sys
 from collections.abc import Generator
 from functools import lru_cache
+from typing import Any
 
 from pytest import fixture
 
@@ -88,19 +89,66 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "indigo_api_version(version): Indigo Server plugin API version reported by "
+        "indigo.server.apiVersion. Takes precedence over the indigo_api_version fixture.",
+    )
+    config.addinivalue_line(
+        "markers",
+        "indigo_plugin_prefs(prefs): Plugin preferences the plugin fixture starts the "
+        "plugin with. Takes precedence over the plugin_prefs fixture.",
+    )
+
+
+def get_mark_value(request, name: str, value_type: type) -> Any:
+    """
+    Get the argument of the closest mark applied to the test.
+
+    :param request: The pytest request of the fixture reading the mark.
+    :param name: The name of the mark.
+    :param value_type: The type the mark's single argument must be.
+    :return: The mark's argument, or None if the mark is not applied.
+    :raises PytestIndigoException: If the mark does not have exactly one argument of
+        value_type.
+    """
+    marker = request.node.get_closest_marker(name)
+    if marker is None:
+        return None
+
+    if (
+        len(marker.args) != 1
+        or marker.kwargs
+        or not isinstance(marker.args[0], value_type)
+    ):
+        raise PytestIndigoException(
+            f"The {name} mark takes a single {value_type.__name__} argument, "
+            f"but got args={marker.args} kwargs={marker.kwargs}"
+        )
+
+    return marker.args[0]
+
+
 @fixture(name="indigo_api_version")
 def fixture_indigo_api_version(request) -> str:
     """
     Indigo Server plugin API version reported by indigo.server.apiVersion.
 
     Uses the indigo_api_version ini option. Override or parametrize this fixture to
-    test against a different Indigo Server version.
+    test against a different Indigo Server version. An indigo_api_version mark takes
+    precedence over this fixture.
     """
     return request.config.getini("indigo_api_version")
 
 
 @fixture(name="indigo")
-def fixture_indigo(indigo_api_version: str) -> Generator[IndigoMock, None, None]:
+def fixture_indigo(
+    request, indigo_api_version: str
+) -> Generator[IndigoMock, None, None]:
+    if (version := get_mark_value(request, "indigo_api_version", str)) is not None:
+        indigo_api_version = version
+
     indigo_mock.reset(api_version=indigo_api_version)
     yield indigo_mock
     indigo_mock.reset()
@@ -126,14 +174,15 @@ def fixture_plugin_prefs() -> Dict:
     Plugin preferences passed to the plugin under test.
 
     Override this fixture to start the plugin with custom preferences. A plain dict
-    is converted to an indigo.Dict.
+    is converted to an indigo.Dict. An indigo_plugin_prefs mark takes precedence over
+    this fixture.
     """
     return Dict()
 
 
 @fixture(name="plugin")
 def fixture_plugin(
-    indigo: IndigoMock, plugin_path: str, plugin_prefs: Dict | dict
+    request, indigo: IndigoMock, plugin_path: str, plugin_prefs: Dict | dict
 ) -> PluginBase:
     """
     A new instance of the plugin under test, set as indigo.activePlugin.
@@ -142,7 +191,10 @@ def fixture_plugin(
     startup() is not called so tests control when the plugin starts.
     """
     # Indigo always provides the plugin preferences as an indigo.Dict
-    if not isinstance(plugin_prefs, Dict):
+    if (prefs := get_mark_value(request, "indigo_plugin_prefs", dict)) is not None:
+        # Copy the preferences, since a class or module mark is shared by many tests
+        plugin_prefs = Dict(prefs)
+    elif not isinstance(plugin_prefs, Dict):
         plugin_prefs = Dict(plugin_prefs)
 
     info = load_plugin_info(plugin_path)
