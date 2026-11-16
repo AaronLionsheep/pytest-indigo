@@ -6,7 +6,7 @@ from collections.abc import Generator
 from functools import lru_cache
 from typing import Any
 
-from pytest import fixture
+from pytest import fixture, hookimpl
 
 from pytest_indigo.exceptions import PytestIndigoException
 from pytest_indigo.indigo import Dict, PluginBase
@@ -43,17 +43,36 @@ def load_plugin_info(plugin_path: str) -> dict:
         return plistlib.load(f)
 
 
-def load_plugin_class(plugin_path: str) -> type[PluginBase]:
+def resolve_plugin_path(config) -> str:
     """
-    Import the Plugin class from an Indigo plugin bundle.
+    Find the .indigoPlugin bundle to test.
 
-    Like IndigoPluginHost3, the "Server Plugin" folder is added to the path and
-    plugin.py is imported as the top-level "plugin" module.
+    Uses the indigo_plugin ini option when set, otherwise the only plugin found in
+    the rootdir.
+
+    :raises PytestIndigoException: If the rootdir has no plugin, or more than one.
+    """
+    if path := config.getini("indigo_plugin"):
+        return os.path.join(config.rootpath, path)
+
+    return find_plugin(config.rootpath)
+
+
+def add_server_plugin_path(plugin_path: str) -> None:
+    """
+    Add the "Server Plugin" folder of an Indigo plugin bundle to the path.
+
+    Like IndigoPluginHost3, this makes plugin.py and the plugin's other modules
+    importable as top-level modules.
     """
     server_plugin_path = os.path.join(plugin_path, "Contents", "Server Plugin")
     if server_plugin_path not in sys.path:
         sys.path.insert(0, server_plugin_path)
 
+
+def load_plugin_class(plugin_path: str) -> type[PluginBase]:
+    """Import the Plugin class from an Indigo plugin bundle."""
+    add_server_plugin_path(plugin_path)
     return importlib.import_module("plugin").Plugin
 
 
@@ -100,6 +119,24 @@ def pytest_configure(config):
         "indigo_plugin_prefs(prefs): Plugin preferences the plugin fixture starts the "
         "plugin with. Takes precedence over the plugin_prefs fixture.",
     )
+
+    # pytest_load_initial_conftests is missed when pytest-indigo is loaded by a conftest
+    add_plugin_to_path(config)
+
+
+@hookimpl(tryfirst=True)
+def pytest_load_initial_conftests(early_config):
+    # Before conftests are loaded, so they can import the plugin's modules
+    add_plugin_to_path(early_config)
+
+
+def add_plugin_to_path(config) -> None:
+    """Make the plugin's modules importable by tests, like IndigoPluginHost3 does."""
+    try:
+        add_server_plugin_path(resolve_plugin_path(config))
+    except PytestIndigoException:
+        # Only an error for tests that use the plugin fixture, which reports it
+        pass
 
 
 def get_mark_value(request, name: str, value_type: type) -> Any:
@@ -162,10 +199,7 @@ def fixture_plugin_path(request) -> str:
     Uses the indigo_plugin ini option when set, otherwise the only plugin found in
     the rootdir. Override this fixture to test a different plugin.
     """
-    if path := request.config.getini("indigo_plugin"):
-        return os.path.join(request.config.rootpath, path)
-
-    return find_plugin(request.config.rootpath)
+    return resolve_plugin_path(request.config)
 
 
 @fixture(name="plugin_prefs")

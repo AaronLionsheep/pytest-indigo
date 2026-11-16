@@ -111,3 +111,83 @@ def test_custom_active_plugin(pytester: pytest.Pytester):
     )
 
     pytester.runpytest().assert_outcomes(passed=1)
+
+
+# MARK: Server Plugin path
+def test_server_plugin_importable_without_plugin_fixture(pytester: pytest.Pytester):
+    make_plugin(pytester, "First")
+    server_plugin = pytester.path / "First.indigoPlugin" / "Contents" / "Server Plugin"
+    (server_plugin / "helper.py").write_text("VALUE = 42\n")
+    pytester.makepyfile(
+        """
+        from helper import VALUE
+        from plugin import Plugin
+
+        def test_imports(indigo):
+            assert VALUE == 42
+            assert issubclass(Plugin, indigo.PluginBase)
+        """
+    )
+
+    pytester.runpytest().assert_outcomes(passed=1)
+
+
+def test_multiple_plugins_without_ini_option(pytester: pytest.Pytester):
+    """Tests that don't use the plugin fixture still run when the plugin is ambiguous"""
+    make_plugin(pytester, "First")
+    make_plugin(pytester, "Second")
+    pytester.makepyfile(
+        """
+        def test_without_plugin(indigo):
+            pass
+
+        def test_with_plugin(plugin):
+            pass
+        """
+    )
+
+    result = pytester.runpytest()
+
+    result.assert_outcomes(passed=1, errors=1)
+    assert "More than one Indigo plugin was found!" in result.stdout.str()
+
+
+def test_typed_fixture_overrides(pytester: pytest.Pytester):
+    """The conftest pattern documented for type hints in the README"""
+    make_plugin(pytester, "First")
+    pytester.makeconftest(
+        """
+        import pytest
+        from plugin import Plugin
+
+        from pytest_indigo import IndigoMock
+
+        pytest_plugins = ["pytest_indigo"]
+
+
+        @pytest.fixture()
+        def plugin(plugin) -> Plugin:
+            return plugin
+
+
+        @pytest.fixture()
+        def indigo(indigo) -> IndigoMock[Plugin]:
+            return indigo
+        """
+    )
+    pytester.makepyfile(
+        """
+        import pytest
+
+        def test_plugin(indigo, plugin):
+            assert indigo.activePlugin is plugin
+
+        @pytest.mark.indigo_api_version("2.4")
+        @pytest.mark.indigo_plugin_prefs({"key": "value"})
+        def test_marks(indigo, plugin):
+            assert indigo.server.apiVersion == "2.4"
+            assert plugin.plugin_prefs == {"key": "value"}
+        """
+    )
+
+    pytester.runpytest().assert_outcomes(passed=2)
