@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = [{name = "Aaron Rohrbaugh", email = "aaron@lionsheeptechnology.com"}]
 requires-python = ">= 3.11.0"
 dependencies = [
-    "pytest"
+    "pytest",
+    "semver ~=3.0"
 ]
 
 [project.entry-points.pytest11]

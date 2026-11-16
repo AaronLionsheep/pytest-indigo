@@ -94,7 +94,7 @@ class IndigoMock(ModuleType):
     """Z-Wave protocol command interface."""
 
     # ---- Server / host interfaces ----
-    # server: ServerInfo
+    server: ServerInfo
     """Indigo server properties and commands."""
     # host: HostInfo
     """Internal host interface (not for plugin use)."""
@@ -150,7 +150,7 @@ class IndigoMock(ModuleType):
         # self.zwave = ZWaveInterface()
 
         # ---- Server / host interfaces ----
-        self.server = ServerInfo()
+        self.server = ServerInfo(api_version="3")
 
         # ---- Active plugin instance ----
         # self.activePlugin: PluginBase

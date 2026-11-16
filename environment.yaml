@@ -6,6 +6,7 @@ dependencies:
   - python ~=3.13.0
   - pytest
   - pytest-cov
+  - semver ~=3.0
   - mypy
   - ruff
   - pip

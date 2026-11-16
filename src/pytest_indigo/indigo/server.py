@@ -2,6 +2,11 @@ import datetime
 import logging
 from typing import Any, Tuple  # noqa: UP035
 
+from pytest_indigo.decorators import (
+    min_api_version,
+    not_implemented,
+    partially_implemented,
+)
 from pytest_indigo.indigo.collections import Dict
 from pytest_indigo.indigo.enums import kLicenseStatus
 from pytest_indigo.indigo.plugin import PluginInfo
@@ -13,6 +18,9 @@ class ServerInfo:
     Documented in server_commands.txt (wiki).
     """
 
+    def __init__(self, api_version: str):
+        self._api_version = api_version
+
     # ---- Properties (read-only) ----
     @property
     def address(self) -> str:
@@ -21,6 +29,7 @@ class ServerInfo:
     @property
     def apiVersion(self) -> str:
         """Currently connected Indigo Server plugin API version string (e.g. "3.8")."""
+        return self._api_version
 
     @property
     def connectionGood(self) -> bool:
@@ -71,38 +80,49 @@ class ServerInfo:
         If returnAsList is True, returns a list of dicts; otherwise a newline-delimited string.
         """
 
+    @not_implemented
     def getDbName(self) -> str:
         """Return the current database name (without file extension)."""
 
+    @not_implemented
     def getDbFilePath(self) -> str:
         """Return the POSIX path to the current database file (including extension)."""
 
+    @not_implemented
     def getDeprecatedElems(self, includeWarnings: bool = False) -> Any:
         """Return the server's list of deprecated elements."""
 
+    @not_implemented
     def getInstallFolderPath(self) -> str:
         """Return the POSIX path to the current Indigo installation folder."""
 
+    @not_implemented
     def getLogsFolderPath(self, pluginId: str | None = None) -> str:
         """Return the POSIX path to the server or plugin logs folder.
         Pass a pluginId to get that plugin's logs folder, or omit for the server logs folder.
         """
 
+    @not_implemented
     def getLatitudeAndLongitude(self) -> Tuple[float, float]:  # noqa: UP006
         """Return (latitude, longitude) as a tuple of floats."""
 
     def getPlugin(self, pluginId: str) -> PluginInfo:
         """Return a PluginInfo object for the given plugin ID."""
 
+    @min_api_version("2.4")
+    @partially_implemented("An empty list is always returned.")
     def getPluginList(self) -> list[PluginInfo]:
         """Return a list of all enabled plugin instances."""
+        return []
 
+    @not_implemented
     def getReflectorURL(self) -> str | None:
         """
         Return the active reflector URL string, or None if no reflector
         is configured or remote access is disabled.
         """
 
+    @not_implemented
     def getSerialPorts(self, filter: str = "") -> dict:
         """
         Return a dict of serial ports where key = POSIX path, value = display name.
@@ -112,6 +132,7 @@ class ServerInfo:
     def getTime(self) -> datetime.datetime:
         """Return a datetime representing the server's current time."""
 
+    @not_implemented
     def getWebServerURL(self) -> str:
         """
         Return the best URL string for the active Indigo Web Server.
@@ -130,6 +151,7 @@ class ServerInfo:
         Use level=logging.WARNING for orange text, level=logging.ERROR or isError=True for red.
         """
 
+    @not_implemented
     def removeAllDelayedActions(self) -> None:
         """Remove all currently scheduled delayed actions."""
 
@@ -139,9 +161,11 @@ class ServerInfo:
         Can only be called from within a plugin.
         """
 
+    @not_implemented
     def savePluginPrefs(self) -> None:
         """Immediately save plugin preferences to disk."""
 
+    @not_implemented
     def sendEmailTo(
         self,
         addresses: str,
@@ -153,6 +177,7 @@ class ServerInfo:
         addresses is a semicolon-separated string of email addresses.
         """
 
+    @not_implemented
     def speak(self, text: str, waitUntilDone: bool = True) -> None:
         """Speak a text string using the built-in speech synthesizer."""
 

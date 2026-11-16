@@ -1,5 +1,6 @@
 from typing import Any, Tuple  # noqa: UP035
 
+from pytest_indigo.decorators import not_implemented, partially_implemented
 from pytest_indigo.indigo.base import ElemKey
 from pytest_indigo.indigo.collections import Dict, List
 from pytest_indigo.indigo.enums import kFanMode, kHvacMode
@@ -40,11 +41,15 @@ class DeviceCmds:
     def delete(self, device: ElemKey) -> None:
         """Delete a device from the Indigo Server."""
 
+    @partially_implemented("An empty list is always returned.")
     def getDependencies(self, device: ElemKey | List | Tuple) -> Any:  # noqa: UP006
         """Return all element dependencies for the given device(s)."""
+        return []
 
+    @partially_implemented("An empty list is always returned.")
     def getGroupList(self, device: ElemKey) -> list[int]:
         """Return a list of device IDs in the same group as the given device."""
+        return []
 
     def groupWithDevice(self, device: ElemKey, groupWithDevice: ElemKey) -> None:
         """Add a device to the same group as another device."""
@@ -66,9 +71,11 @@ class DeviceCmds:
     def changeDeviceTypeId(self, device: ElemKey, deviceTypeId: str) -> None:
         """Change the device type ID of a device."""
 
+    @not_implemented
     def x10ChangeAddress(self, device: ElemKey, address: str) -> None:
         """Change the X10 address of a device."""
 
+    @not_implemented
     def x10ChangeModel(self, device: ElemKey, model: str) -> None:
         """Change the X10 model of a device."""
 

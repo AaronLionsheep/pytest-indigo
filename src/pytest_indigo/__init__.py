@@ -5,13 +5,12 @@ from functools import lru_cache
 
 from pytest import fixture
 
+from pytest_indigo.exceptions import PytestIndigoException
+
 from .mock import IndigoMock
 
 indigo_mock = IndigoMock()
 sys.modules["indigo"] = indigo_mock
-
-
-class PytestIndigoException(Exception): ...
 
 
 @lru_cache
