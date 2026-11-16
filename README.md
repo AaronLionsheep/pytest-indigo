@@ -273,7 +273,7 @@ Marks set fixture values for a single test, a class, or a whole module. All pyte
 | Mark | Sets | Used by |
 |---|---|---|
 | [`indigo_api_version(version)`](#indigo_api_version-mark) | The plugin API version reported by `indigo.server.apiVersion` | [`indigo`](#indigo) |
-| [`indigo_plugin_prefs(prefs)`](#indigo_plugin_prefs-mark) | The preferences your plugin starts with | [`plugin`](#plugin) |
+| [`indigo_plugin_prefs(prefs, *, merge, unset)`](#indigo_plugin_prefs-mark) | The preferences your plugin starts with | [`plugin`](#plugin) |
 
 Apply a mark to a test function, to a class to cover all of its tests, or to a module with `pytestmark`:
 
@@ -306,6 +306,8 @@ When a value is set in more than one place, the first match wins:
 
 Marks always win, so a mark on one test can override a version or preferences set for a whole directory by a `conftest.py` fixture.
 
+The [`indigo_plugin_prefs`](#indigo_plugin_prefs-mark) mark can also merge into lower priority preferences instead of replacing them. See [Layering marks](#layering-marks).
+
 ### `indigo_api_version` mark
 `@pytest.mark.indigo_api_version(version)` sets the version reported by `indigo.server.apiVersion`, in place of the [`indigo_api_version`](#indigo_api_version) fixture. `version` is a string, such as `"3.4"`.
 
@@ -316,15 +318,73 @@ def test_get_plugin_list_requires_2_4(indigo):
 ```
 
 ### `indigo_plugin_prefs` mark
-`@pytest.mark.indigo_plugin_prefs(prefs)` sets the preferences the [`plugin`](#plugin) fixture starts your plugin with, in place of the [`plugin_prefs`](#plugin_prefs) fixture. `prefs` is a `dict` or an `indigo.Dict`.
+`@pytest.mark.indigo_plugin_prefs(prefs=None, *, merge=None, unset=())` sets the preferences the [`plugin`](#plugin) fixture starts your plugin with.
+
+| Argument | Description |
+|---|---|
+| `prefs` | A `dict` or `indigo.Dict` of preferences. |
+| `merge` | `False` replaces the lower priority preferences with `prefs`. `True` merges `prefs` into them, adding new keys and overriding existing ones. Defaults to `False` when `prefs` is given, and `True` when it is not. |
+| `unset` | A list of keys to remove, after `prefs` is applied. Keys that aren't present are ignored. |
+
+The lower priority preferences are the [`plugin_prefs`](#plugin_prefs) fixture's value, with any farther marks applied (see [Layering marks](#layering-marks)).
+
+By default, the mark replaces the preferences:
 
 ```python
 @pytest.mark.indigo_plugin_prefs({"timeout": "30"})
 def test_timeout(plugin):
-    assert plugin.pluginPrefs["timeout"] == "30"
+    assert plugin.pluginPrefs == {"timeout": "30"}
 ```
 
-Each test gets its own copy of the preferences, so a test that changes `plugin.pluginPrefs` does not affect other tests sharing a class or module mark.
+With `merge=True`, it only changes the keys you give it:
+
+```python
+@pytest.fixture()
+def plugin_prefs():
+    return {"log-level": "info", "timeout": "30"}
+
+
+@pytest.mark.indigo_plugin_prefs({"timeout": "5"}, merge=True)
+def test_short_timeout(plugin):
+    assert plugin.pluginPrefs == {"log-level": "info", "timeout": "5"}
+```
+
+To remove preferences, list their keys in `unset`. Without `prefs`, the mark merges, so the other preferences are kept:
+
+```python
+@pytest.mark.indigo_plugin_prefs(unset=["timeout"])
+def test_timeout_not_saved_yet(plugin):
+    assert plugin.pluginPrefs == {"log-level": "info"}
+```
+
+`None` is a preference value like any other, so `{"timeout": None}` sets `timeout` to `None`. Use `unset` to remove a key.
+
+Each test gets its own copy of the preferences, so a test that changes `plugin.pluginPrefs` does not affect other tests sharing a class or module mark, or a fixture's value.
+
+#### Layering marks
+When marks are applied at several levels, they are applied in order from the farthest to the closest: the module, then the class, then the test function. Each mark replaces or merges into the result of the marks before it:
+
+```python
+import pytest
+
+pytestmark = pytest.mark.indigo_plugin_prefs({"log-level": "info", "timeout": "30"})
+
+
+@pytest.mark.indigo_plugin_prefs({"timeout": "5"}, merge=True)
+class TestShortTimeout:
+    def test_class(self, plugin):
+        assert plugin.pluginPrefs == {"log-level": "info", "timeout": "5"}
+
+    @pytest.mark.indigo_plugin_prefs({"log-level": "debug"}, merge=True)
+    def test_merged(self, plugin):
+        assert plugin.pluginPrefs == {"log-level": "debug", "timeout": "5"}
+
+    @pytest.mark.indigo_plugin_prefs({"log-level": "debug"})
+    def test_replaced(self, plugin):
+        assert plugin.pluginPrefs == {"log-level": "debug"}
+```
+
+A replacing mark discards everything before it, so marks that only replace work as before: the closest one wins.
 
 ## Using a custom `indigo.activePlugin`
 `indigo.activePlugin` always holds a plugin. Without the [`plugin`](#plugin) fixture, it holds a bare `indigo.PluginBase`.

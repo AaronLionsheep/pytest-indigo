@@ -166,7 +166,137 @@ def test_indigo_plugin_prefs_mark_copied_per_test(pytester: pytest.Pytester):
     pytester.runpytest().assert_outcomes(passed=2)
 
 
+@pytest.mark.parametrize(
+    ("marks", "expected"),
+    [
+        pytest.param(
+            ['indigo_plugin_prefs({"key": "mark"}, merge=True)'],
+            {"key": "mark", "other": "fixture"},
+            id="merge",
+        ),
+        pytest.param(
+            ['indigo_plugin_prefs(prefs={"key": "mark"}, merge=True)'],
+            {"key": "mark", "other": "fixture"},
+            id="merge-prefs-keyword",
+        ),
+        pytest.param(
+            ['indigo_plugin_prefs({"key": None}, merge=True)'],
+            {"key": None, "other": "fixture"},
+            id="merge-none-value",
+        ),
+        pytest.param(
+            ['indigo_plugin_prefs(unset=["key"])'],
+            {"other": "fixture"},
+            id="unset-merges-without-prefs",
+        ),
+        pytest.param(
+            ['indigo_plugin_prefs(unset=("key", "missing"))'],
+            {"other": "fixture"},
+            id="unset-missing-key",
+        ),
+        pytest.param(
+            ['indigo_plugin_prefs({"key": "mark"}, merge=True, unset=["key"])'],
+            {"other": "fixture"},
+            id="unset-after-merge",
+        ),
+        pytest.param(
+            ['indigo_plugin_prefs({"key": "mark", "new": "mark"}, unset=["new"])'],
+            {"key": "mark"},
+            id="unset-after-replace",
+        ),
+        pytest.param(
+            ["indigo_plugin_prefs()"],
+            {"key": "fixture", "other": "fixture"},
+            id="empty-merges",
+        ),
+        pytest.param(
+            ["indigo_plugin_prefs(merge=False)"],
+            {},
+            id="empty-replace",
+        ),
+    ],
+)
+def test_indigo_plugin_prefs_modes(pytester: pytest.Pytester, marks, expected):
+    make_plugin(pytester, "First")
+    decorators = "\n".join(f"@pytest.mark.{mark}" for mark in marks)
+    pytester.makepyfile(
+        f"""
+        import pytest
+
+        @pytest.fixture()
+        def plugin_prefs():
+            return {{"key": "fixture", "other": "fixture"}}
+
+        {decorators}
+        def test_prefs(indigo, plugin):
+            assert isinstance(plugin.plugin_prefs, indigo.Dict)
+            assert plugin.plugin_prefs == {expected!r}
+        """
+    )
+
+    pytester.runpytest().assert_outcomes(passed=1)
+
+
+def test_indigo_plugin_prefs_layered_marks(pytester: pytest.Pytester):
+    make_plugin(pytester, "First")
+    pytester.makepyfile(
+        """
+        import pytest
+
+        pytestmark = pytest.mark.indigo_plugin_prefs({"level": "module", "a": "module"})
+
+        def test_module(plugin):
+            assert plugin.plugin_prefs == {"level": "module", "a": "module"}
+
+        @pytest.mark.indigo_plugin_prefs({"level": "class", "b": "class"}, merge=True)
+        class TestMerged:
+            def test_class(self, plugin):
+                assert plugin.plugin_prefs == {"level": "class", "a": "module", "b": "class"}
+
+            @pytest.mark.indigo_plugin_prefs({"level": "function"}, merge=True, unset=["a"])
+            def test_function_merge(self, plugin):
+                assert plugin.plugin_prefs == {"level": "function", "b": "class"}
+
+            @pytest.mark.indigo_plugin_prefs({"level": "function"})
+            def test_function_replace(self, plugin):
+                assert plugin.plugin_prefs == {"level": "function"}
+        """
+    )
+
+    pytester.runpytest().assert_outcomes(passed=4)
+
+
+def test_indigo_plugin_prefs_merge_does_not_change_fixture_value(
+    pytester: pytest.Pytester,
+):
+    make_plugin(pytester, "First")
+    pytester.makepyfile(
+        """
+        import indigo
+        import pytest
+
+        SHARED = indigo.Dict({"key": "fixture"})
+
+        @pytest.fixture()
+        def plugin_prefs():
+            return SHARED
+
+        @pytest.mark.indigo_plugin_prefs({"key": "mark"}, merge=True)
+        def test_merge(plugin):
+            assert plugin.plugin_prefs == {"key": "mark"}
+
+        def test_shared_unchanged(plugin):
+            assert SHARED == {"key": "fixture"}
+        """
+    )
+
+    pytester.runpytest().assert_outcomes(passed=2)
+
+
 # MARK: Invalid marks
+PREFS_USAGE = "Expected indigo_plugin_prefs(prefs=None, *, merge=None, unset=())"
+
+
 @pytest.mark.parametrize(
     ("mark", "error"),
     [
@@ -191,14 +321,46 @@ def test_indigo_plugin_prefs_mark_copied_per_test(pytester: pytest.Pytester):
             id="api-version-kwarg",
         ),
         pytest.param(
-            "indigo_plugin_prefs()",
-            r"The indigo_plugin_prefs mark takes a single dict argument, but got args=() kwargs={}",
-            id="plugin-prefs-missing",
+            'indigo_plugin_prefs([("key", "value")])',
+            "Invalid indigo_plugin_prefs mark: prefs must be a dict, but got [('key', 'value')]. "
+            + PREFS_USAGE,
+            id="plugin-prefs-type",
         ),
         pytest.param(
-            'indigo_plugin_prefs([("key", "value")])',
-            r"The indigo_plugin_prefs mark takes a single dict argument, but got args=([('key', 'value')],) kwargs={}",
-            id="plugin-prefs-type",
+            "indigo_plugin_prefs({}, {})",
+            "Invalid indigo_plugin_prefs mark: too many positional arguments. "
+            + PREFS_USAGE,
+            id="plugin-prefs-extra",
+        ),
+        pytest.param(
+            "indigo_plugin_prefs({}, prefs={})",
+            "Invalid indigo_plugin_prefs mark: multiple values for argument 'prefs'. "
+            + PREFS_USAGE,
+            id="plugin-prefs-duplicate",
+        ),
+        pytest.param(
+            "indigo_plugin_prefs({}, replace=True)",
+            "Invalid indigo_plugin_prefs mark: got an unexpected keyword argument 'replace'. "
+            + PREFS_USAGE,
+            id="plugin-prefs-unknown-kwarg",
+        ),
+        pytest.param(
+            'indigo_plugin_prefs({}, merge="yes")',
+            "Invalid indigo_plugin_prefs mark: merge must be a bool, but got 'yes'. "
+            + PREFS_USAGE,
+            id="plugin-prefs-merge-type",
+        ),
+        pytest.param(
+            'indigo_plugin_prefs(unset="key")',
+            "Invalid indigo_plugin_prefs mark: unset must be a list of str, but got 'key'. "
+            + PREFS_USAGE,
+            id="plugin-prefs-unset-str",
+        ),
+        pytest.param(
+            "indigo_plugin_prefs(unset=[1])",
+            "Invalid indigo_plugin_prefs mark: unset must be a list of str, but got [1]. "
+            + PREFS_USAGE,
+            id="plugin-prefs-unset-item-type",
         ),
     ],
 )

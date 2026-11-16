@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import os
 import plistlib
 import sys
@@ -116,8 +117,10 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         "markers",
-        "indigo_plugin_prefs(prefs): Plugin preferences the plugin fixture starts the "
-        "plugin with. Takes precedence over the plugin_prefs fixture.",
+        "indigo_plugin_prefs(prefs=None, *, merge=None, unset=()): Plugin preferences "
+        "the plugin fixture starts the plugin with. Replaces the lower priority "
+        "preferences, or merges into them with merge=True or when prefs is omitted. "
+        "Keys in unset are removed afterwards.",
     )
 
     # pytest_load_initial_conftests is missed when pytest-indigo is loaded by a conftest
@@ -165,6 +168,74 @@ def get_mark_value(request, name: str, value_type: type) -> Any:
         )
 
     return marker.args[0]
+
+
+def _plugin_prefs_mark_signature(
+    prefs: dict | None = None, *, merge: bool | None = None, unset: list | tuple = ()
+):
+    """The signature of the indigo_plugin_prefs mark, used to bind its arguments."""
+
+
+def parse_plugin_prefs_mark(marker) -> tuple[dict, bool, list | tuple]:
+    """
+    Parse the arguments of an indigo_plugin_prefs mark.
+
+    :return: The mark's preferences, whether to merge them into the lower priority
+        preferences, and the keys to remove afterwards.
+    :raises PytestIndigoException: If the mark's arguments are invalid.
+    """
+    usage = "Expected indigo_plugin_prefs(prefs=None, *, merge=None, unset=())"
+    try:
+        bound = inspect.signature(_plugin_prefs_mark_signature).bind(
+            *marker.args, **marker.kwargs
+        )
+    except TypeError as e:
+        raise PytestIndigoException(
+            f"Invalid indigo_plugin_prefs mark: {e}. {usage}"
+        ) from None
+
+    prefs = bound.arguments.get("prefs")
+    merge = bound.arguments.get("merge")
+    unset = bound.arguments.get("unset", ())
+
+    if prefs is not None and not isinstance(prefs, dict):
+        error = f"prefs must be a dict, but got {prefs!r}"
+    elif merge is not None and not isinstance(merge, bool):
+        error = f"merge must be a bool, but got {merge!r}"
+    elif not isinstance(unset, (list, tuple)) or not all(
+        isinstance(key, str) for key in unset
+    ):
+        error = f"unset must be a list of str, but got {unset!r}"
+    else:
+        # Without prefs, the mark only changes the lower priority preferences
+        return prefs or {}, prefs is None if merge is None else merge, unset
+
+    raise PytestIndigoException(f"Invalid indigo_plugin_prefs mark: {error}. {usage}")
+
+
+def resolve_plugin_prefs(request, plugin_prefs: Dict | dict) -> Dict:
+    """
+    Apply the indigo_plugin_prefs marks to the plugin_prefs fixture's value.
+
+    Marks are applied from the farthest (module) to the closest (function), each one
+    replacing or merging into the result of the marks before it.
+    """
+    markers = list(request.node.iter_markers("indigo_plugin_prefs"))
+    if not markers:
+        return plugin_prefs if isinstance(plugin_prefs, Dict) else Dict(plugin_prefs)
+
+    # Copy the preferences, since the fixture value and marks may be shared by many tests
+    resolved = Dict(plugin_prefs)
+    for marker in reversed(markers):
+        prefs, merge, unset = parse_plugin_prefs_mark(marker)
+        if not merge:
+            resolved = Dict()
+        for key, value in prefs.items():
+            resolved[key] = value
+        for key in unset:
+            resolved.pop(key, None)
+
+    return resolved
 
 
 @fixture(name="indigo_api_version")
@@ -225,11 +296,7 @@ def fixture_plugin(
     startup() is not called so tests control when the plugin starts.
     """
     # Indigo always provides the plugin preferences as an indigo.Dict
-    if (prefs := get_mark_value(request, "indigo_plugin_prefs", dict)) is not None:
-        # Copy the preferences, since a class or module mark is shared by many tests
-        plugin_prefs = Dict(prefs)
-    elif not isinstance(plugin_prefs, Dict):
-        plugin_prefs = Dict(plugin_prefs)
+    plugin_prefs = resolve_plugin_prefs(request, plugin_prefs)
 
     info = load_plugin_info(plugin_path)
     plugin = load_plugin_class(plugin_path)(
