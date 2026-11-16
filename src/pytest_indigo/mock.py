@@ -1,4 +1,7 @@
 from types import ModuleType
+from typing import Generic
+
+from typing_extensions import TypeVar
 
 from pytest_indigo.indigo import Dict, List
 from pytest_indigo.indigo.device.collection import DeviceList
@@ -29,8 +32,18 @@ from pytest_indigo.indigo.server import ServerInfo
 DEFAULT_API_VERSION = "3"
 """The Indigo Server plugin API version mocked when no other version is configured."""
 
+PluginT = TypeVar("PluginT", bound=PluginBase, default=PluginBase)
+"""The type of indigo.activePlugin. Only used by type checkers."""
 
-class IndigoMock(ModuleType):
+
+class IndigoMock(ModuleType, Generic[PluginT]):
+    """
+    The mocked indigo module.
+
+    Generic over the type of indigo.activePlugin, so tests can annotate
+    ``indigo: IndigoMock[Plugin]`` to get type hints for their plugin class.
+    """
+
     Dict = Dict
     List = List
 
@@ -107,12 +120,12 @@ class IndigoMock(ModuleType):
     """Internal host interface (not for plugin use)."""
 
     # ---- Active plugin instance ----
-    activePlugin: PluginBase
+    activePlugin: PluginT
     """
     The currently running plugin instance. Set by IndigoPluginHost3 at startup.
 
     Defaults to a bare PluginBase. Tests act as IndigoPluginHost3 and assign the
-    plugin under test.
+    plugin under test. The type parameter is only a hint, it is not checked.
     """
 
     # ---- Debug / plugin mode constants ----
@@ -170,6 +183,7 @@ class IndigoMock(ModuleType):
         self.server = ServerInfo(api_version=api_version)
 
         # ---- Active plugin instance ----
-        self.activePlugin = PluginBase(
+        # Until the plugin under test is assigned, the active plugin is a bare PluginBase
+        self.activePlugin = PluginBase(  # type: ignore[assignment]
             "com.pytest-indigo.plugin", "pytest-indigo", "0.0.0", Dict()
         )

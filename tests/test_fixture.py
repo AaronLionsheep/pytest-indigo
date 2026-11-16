@@ -1,10 +1,17 @@
 import pytest
 
 from pytest_indigo import IndigoMock
+from pytest_indigo.indigo import PluginBase
 
 
 def test_fixture_returns_indigo_mock(indigo: IndigoMock):
     assert isinstance(indigo, IndigoMock)
+
+
+def test_indigo_mock_type_parameter(indigo: IndigoMock[PluginBase]):
+    """The plugin type parameter is only a type hint"""
+    assert IndigoMock[PluginBase].__origin__ is IndigoMock  # type: ignore[attr-defined]
+    assert isinstance(indigo.activePlugin, PluginBase)
 
 
 @pytest.mark.xfail(reason="indigo.devices not implemented yet")
