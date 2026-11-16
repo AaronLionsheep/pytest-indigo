@@ -25,6 +25,9 @@ from pytest_indigo.indigo.device.models import (
 from pytest_indigo.indigo.ids import IndigoIds
 from pytest_indigo.indigo.server import ServerInfo
 
+DEFAULT_API_VERSION = "3"
+"""The Indigo Server plugin API version mocked when no other version is configured."""
+
 
 class IndigoMock(ModuleType):
     Dict = Dict
@@ -116,7 +119,12 @@ class IndigoMock(ModuleType):
     def __init__(self):
         self.reset()
 
-    def reset(self):
+    def reset(self, api_version: str = DEFAULT_API_VERSION):
+        """
+        Reset the mock to a clean Indigo Server.
+
+        :param api_version: The plugin API version reported by indigo.server.apiVersion.
+        """
         self.ids = IndigoIds()
 
         # ---- Collections ----
@@ -150,7 +158,7 @@ class IndigoMock(ModuleType):
         # self.zwave = ZWaveInterface()
 
         # ---- Server / host interfaces ----
-        self.server = ServerInfo(api_version="3")
+        self.server = ServerInfo(api_version=api_version)
 
         # ---- Active plugin instance ----
         # self.activePlugin: PluginBase

@@ -7,7 +7,7 @@ from pytest import fixture
 
 from pytest_indigo.exceptions import PytestIndigoException
 
-from .mock import IndigoMock
+from .mock import DEFAULT_API_VERSION, IndigoMock
 
 indigo_mock = IndigoMock()
 sys.modules["indigo"] = indigo_mock
@@ -36,6 +36,12 @@ def find_plugin(base_dir):
 def pytest_addoption(parser):
     group = parser.getgroup("Indigo", "Configuration for my internal test suite")
 
+    parser.addini(
+        "indigo_api_version",
+        help="Indigo Server plugin API version reported by indigo.server.apiVersion.",
+        default=DEFAULT_API_VERSION,
+    )
+
     # 2. Register the INI option fallback
     parser.addini(
         "myplugin_retries",
@@ -53,11 +59,19 @@ def pytest_addoption(parser):
     )
 
 
-@fixture(name="indigo")
-def fixture_indigo(request) -> Generator[IndigoMock, None, None]:
-    # data = request.getfixturevalue("plugin_fixture_name")
-    # plugin = find_plugin(request.config.rootpath)
-    # print(plugin)
+@fixture(name="indigo_api_version")
+def fixture_indigo_api_version(request) -> str:
+    """
+    Indigo Server plugin API version reported by indigo.server.apiVersion.
 
+    Uses the indigo_api_version ini option. Override or parametrize this fixture to
+    test against a different Indigo Server version.
+    """
+    return request.config.getini("indigo_api_version")
+
+
+@fixture(name="indigo")
+def fixture_indigo(indigo_api_version: str) -> Generator[IndigoMock, None, None]:
+    indigo_mock.reset(api_version=indigo_api_version)
     yield indigo_mock
     indigo_mock.reset()
